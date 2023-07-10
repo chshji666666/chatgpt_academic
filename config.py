@@ -1,5 +1,5 @@
 # [step 1]>> 例如： API_KEY = "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" （此key无效）
-API_KEY = "sk-此处填API密钥"    # 可同时填写多个API-KEY，用英文逗号分割，例如API_KEY = "sk-openaikey1,sk-openaikey2,fkxxxx-api2dkey1,fkxxxx-api2dkey2"
+API_KEY = "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"    # 可同时填写多个API-KEY，用英文逗号分割，例如API_KEY = "sk-openaikey1,sk-openaikey2,fkxxxx-api2dkey1,fkxxxx-api2dkey2"
 
 
 # [step 2]>> 改为True应用代理，如果直接在海外服务器部署，此处不修改
@@ -22,7 +22,7 @@ else:
 
 # [step 3]>> 多线程函数插件中，默认允许多少路线程同时访问OpenAI。Free trial users的限制是每分钟3次，Pay-as-you-go users的限制是每分钟3500次
 # 一言以蔽之：免费用户填3，OpenAI绑了信用卡的用户可以填 16 或者更高。提高限制请查询：https://platform.openai.com/docs/guides/rate-limits/overview
-DEFAULT_WORKER_NUM = 3
+DEFAULT_WORKER_NUM = 16
 
 
 # [step 4]>> 以下配置可以优化体验，但大部分场合下并不需要修改
@@ -33,20 +33,20 @@ CHATBOT_HEIGHT = 1115
 CODE_HIGHLIGHT = True
 
 # 窗口布局
-LAYOUT = "LEFT-RIGHT"  # "LEFT-RIGHT"（左右布局） # "TOP-DOWN"（上下布局）
+LAYOUT = "TOP-DOWN"  # "LEFT-RIGHT"（左右布局） # "TOP-DOWN"（上下布局）
 DARK_MODE = True  # "LEFT-RIGHT"（左右布局） # "TOP-DOWN"（上下布局）
 
 # 发送请求到OpenAI后，等待多久判定为超时
 TIMEOUT_SECONDS = 30
 
 # 网页的端口, -1代表随机端口
-WEB_PORT = -1
+WEB_PORT = 50923
 
 # 如果OpenAI不响应（网络卡顿、代理失败、KEY失效），重试的次数限制
 MAX_RETRY = 2
 
 # 模型选择是 (注意: LLM_MODEL是默认选中的模型, 同时它必须被包含在AVAIL_LLM_MODELS切换列表中 )
-LLM_MODEL = "gpt-3.5-turbo" # 可选 ↓↓↓
+LLM_MODEL = "gpt-3.5-turbo-16k" # 可选 ↓↓↓
 AVAIL_LLM_MODELS = ["gpt-3.5-turbo-16k", "gpt-3.5-turbo", "azure-gpt35", "api2d-gpt-3.5-turbo", "gpt-4", "api2d-gpt-4", "chatglm", "moss", "newbing", "newbing-free", "stack-claude"]
 # P.S. 其他可用的模型还包括 ["gpt-3.5-turbo-0613", "gpt-3.5-turbo-16k-0613", "newbing-free", "jittorllms_rwkv", "jittorllms_pangualpha", "jittorllms_llama"]
 

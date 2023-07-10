@@ -126,6 +126,8 @@ advanced_css = """
     padding-inline-start: 2em !important;
 }
 
+footer {visibility: hidden}
+
 /* chat box. */
 [class *= "message"] {
     border-radius: var(--radius-xl) !important;

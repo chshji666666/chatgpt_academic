@@ -842,4 +842,5 @@ def objload(file='objdump.tmp'):
         return
     with open(file, 'rb') as f:
         return pickle.load(f)
-    
+
+

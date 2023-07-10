@@ -106,7 +106,27 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history=[], sys_prompt="",
     return result
 
 
-def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_prompt='', stream = True, additional_fn=None):
+def is_pck_key(pck):
+    # 定义请求参数
+    payloadpck = {'return_data': '0', 'operation': '3', 'promptcankey': pck,
+                  'app_key': '660D1DD124DC1EF00F3EC3B8344333D3', 'sign': 'AEAE7040B6D805289EF2CE2A43D9364D'}
+    # 发起POST请求
+    responsepck = requests.post('https://hn216.api.yesapi.cn/?s=SVIP.Svantoo2014_MyApi.APromptusecount',
+                                data=payloadpck)
+    # 打印响应状态码
+    print('Status Code:', responsepck.status_code)
+    # 解析JSON响应
+    datapck = responsepck.json()
+    # 访问多层结构中的字段值
+    value = datapck['data']['usecountres']
+    if not value:
+        return False
+    else:
+        return True
+
+
+
+def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_prompt='',stream = True, additional_fn=None):
     """
     发送至chatGPT，流式获取输出。
     用于基础的对话功能。
@@ -116,6 +136,46 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
     chatbot 为WebUI中显示的对话列表，修改它，然后yeild出去，可以直接修改对话界面内容
     additional_fn代表点击的哪个按钮，按钮见functional.py
     """
+    """
+    if promptcankey=="":
+        #chatbot.append(("密钥为空,进去aichat.promptcan.com获取"))
+        yield from update_ui(chatbot=chatbot, history=history, msg="密钥为空,进入网址查看使用帮助并获取密钥,http://www.promptcan.com/help/view15.html")  # 刷新界面
+        return
+
+    # 定义请求参数
+    payloadpck = {'return_data': '0', 'operation': '3','promptcankey':promptcankey,'app_key':'660D1DD124DC1EF00F3EC3B8344333D3','sign':'AEAE7040B6D805289EF2CE2A43D9364D'}
+    # 发起POST请求
+    responsepck = requests.post('https://hn216.api.yesapi.cn/?s=SVIP.Svantoo2014_MyApi.APromptusecount', data=payloadpck)
+    # 打印响应状态码
+    print('Status Code:', responsepck.status_code)
+    # 解析JSON响应
+    datapck = responsepck.json()
+    # 访问多层结构中的字段值
+    value = datapck['data']['usecountres']
+    if not value:
+        yield from update_ui(chatbot=chatbot, history=history,msg="密钥错误或失效,进入网址查看使用帮助并获取密钥,http://www.promptcan.com/help/view15.html")  # 刷新界面
+        return
+    """
+
+    if chatbot._cookies['pck'] == "not":
+     if is_pck_key(inputs):
+        chatbot._cookies['pck'] = "yes"
+        chatbot.append(("密钥验证成功","全部功能开启无限制使用"))
+        yield from update_ui(chatbot=chatbot, history=history, msg="密钥验证成功")  # 刷新界面
+        return
+     else:
+        chatbot.append(("密钥验证失败", "密钥错误或失效，请先验证密钥"))
+        yield from update_ui(chatbot=chatbot, history=history,
+                             msg="密钥错误或失效,进入网址查看使用帮助并获取密钥,http://www.promptcan.com/help/view15.html")  # 刷新界面
+        return
+
+
+    #if chatbot._cookies['pck'] == "not":
+     #   chatbot.append(("密钥验证失败", "密钥错误或失效，请确认"))
+     #   yield from update_ui(chatbot=chatbot, history=history,
+     #                        msg="请先验证平台密钥,进入网址查看使用帮助并获取密钥,http://www.promptcan.com/help/view15.html")  # 刷新界面
+     #   return
+
     if is_any_api_key(inputs):
         chatbot._cookies['api_key'] = inputs
         chatbot.append(("输入已识别为openai的api_key", what_keys(inputs)))

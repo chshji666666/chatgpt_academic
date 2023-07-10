@@ -15,8 +15,10 @@ def main():
 
     from check_proxy import get_current_version
     initial_prompt = "Serve me as a writing and programming assistant."
-    title_html = f"<h1 align=\"center\">ChatGPT 学术优化 {get_current_version()}</h1>"
-    description =  """代码开源和更新[地址🚀](https://github.com/binary-husky/chatgpt_academic)，感谢热情的[开发者们❤️](https://github.com/binary-husky/chatgpt_academic/graphs/contributors)"""
+    #title_html = f"<h1 align=\"center\">ChatGPT 学术优化 {get_current_version()}</h1>"
+    title_html = f"<h1 align=\"center\">文献AI智能助手</h1>"
+    #description =  """代码开源和更新[地址🚀](https://github.com/binary-husky/chatgpt_academic)，感谢热情的[开发者们❤️](https://github.com/binary-husky/chatgpt_academic/graphs/contributors)"""
+    description = ""
 
     # 问询记录, python 版本建议3.9+（越新越好）
     import logging
@@ -54,7 +56,7 @@ def main():
     cancel_handles = []
     with gr.Blocks(title="ChatGPT 学术优化", theme=set_theme, analytics_enabled=False, css=advanced_css) as demo:
         gr.HTML(title_html)
-        cookies = gr.State({'api_key': API_KEY, 'llm_model': LLM_MODEL})
+        cookies = gr.State({'api_key': API_KEY, 'llm_model': LLM_MODEL,'pck':'not'})
         with gr_L1():
             with gr_L2(scale=2):
                 chatbot = gr.Chatbot(label=f"当前模型：{LLM_MODEL}")
@@ -72,6 +74,8 @@ def main():
                         clearBtn = gr.Button("清除", variant="secondary", visible=False); clearBtn.style(size="sm")
                     with gr.Row():
                         status = gr.Markdown(f"Tip: 按Enter提交, 按Shift+Enter换行。当前模型: {LLM_MODEL} \n {proxy_info}")
+                    with gr.Row():
+                        statusads = gr.Markdown(f"专业论文代笔，课程设计服务，软件开发需求，联系QQ:250508212")
                 with gr.Accordion("基础功能区", open=True) as area_basic_fn:
                     with gr.Row():
                         for k in functional:
@@ -102,6 +106,7 @@ def main():
                             file_upload = gr.Files(label="任何文件, 但推荐上传压缩文件(zip, tar)", file_count="multiple")
                 with gr.Accordion("更换模型 & SysPrompt & 交互界面布局", open=(LAYOUT == "TOP-DOWN")):
                     system_prompt = gr.Textbox(show_label=True, placeholder=f"System Prompt", label="System prompt", value=initial_prompt)
+                    #promptcankey = gr.Textbox(show_label=True, placeholder=f"密钥", label="密钥", value="")
                     top_p = gr.Slider(minimum=-0, maximum=1.0, value=1.0, step=0.01,interactive=True, label="Top-p (nucleus sampling)",)
                     temperature = gr.Slider(minimum=-0, maximum=2.0, value=1.0, step=0.01, interactive=True, label="Temperature",)
                     max_length_sl = gr.Slider(minimum=256, maximum=8192, value=4096, step=1, interactive=True, label="Local LLM MaxLength",)
