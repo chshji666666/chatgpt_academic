@@ -121,6 +121,8 @@ def is_pck_key(pck):
     value = datapck['data']['usecountres']
     if not value:
         return False
+    elif datapck['data']['usecountres']['usecount'] != 400001:
+        return False
     else:
         return True
 
