@@ -16,14 +16,8 @@ from toolbox import get_conf, trimmed_format_exc
 from .bridge_chatgpt import predict_no_ui_long_connection as chatgpt_noui
 from .bridge_chatgpt import predict as chatgpt_ui
 
-from .bridge_azure_test import predict_no_ui_long_connection as azure_noui
-from .bridge_azure_test import predict as azure_ui
-
 from .bridge_chatglm import predict_no_ui_long_connection as chatglm_noui
 from .bridge_chatglm import predict as chatglm_ui
-
-from .bridge_newbing import predict_no_ui_long_connection as newbing_noui
-from .bridge_newbing import predict as newbing_ui
 
 # from .bridge_tgui import predict_no_ui_long_connection as tgui_noui
 # from .bridge_tgui import predict as tgui_ui
@@ -51,10 +45,11 @@ class LazyloadTiktoken(object):
         return encoder.decode(*args, **kwargs)
 
 # Endpoint 重定向
-API_URL_REDIRECT, = get_conf("API_URL_REDIRECT")
+API_URL_REDIRECT, AZURE_ENDPOINT, AZURE_ENGINE = get_conf("API_URL_REDIRECT", "AZURE_ENDPOINT", "AZURE_ENGINE")
 openai_endpoint = "https://api.openai.com/v1/chat/completions"
 api2d_endpoint = "https://openai.api2d.net/v1/chat/completions"
 newbing_endpoint = "wss://sydney.bing.com/sydney/ChatHub"
+azure_endpoint = AZURE_ENDPOINT + f'openai/deployments/{AZURE_ENGINE}/chat/completions?api-version=2023-05-15'
 # 兼容旧版的配置
 try:
     API_URL, = get_conf("API_URL")
@@ -124,10 +119,10 @@ model_info = {
     },
 
     # azure openai
-    "azure-gpt35":{
-        "fn_with_ui": azure_ui,
-        "fn_without_ui": azure_noui,
-        "endpoint": get_conf("AZURE_ENDPOINT"),
+    "azure-gpt-3.5":{
+        "fn_with_ui": chatgpt_ui,
+        "fn_without_ui": chatgpt_noui,
+        "endpoint": azure_endpoint,
         "max_token": 4096,
         "tokenizer": tokenizer_gpt35,
         "token_cnt": get_token_num_gpt35,
@@ -169,21 +164,35 @@ model_info = {
         "tokenizer": tokenizer_gpt35,
         "token_cnt": get_token_num_gpt35,
     },
-    
-    # newbing
-    "newbing": {
-        "fn_with_ui": newbing_ui,
-        "fn_without_ui": newbing_noui,
-        "endpoint": newbing_endpoint,
-        "max_token": 4096,
-        "tokenizer": tokenizer_gpt35,
-        "token_cnt": get_token_num_gpt35,
-    },
 
 }
 
 
-AVAIL_LLM_MODELS, = get_conf("AVAIL_LLM_MODELS")
+AVAIL_LLM_MODELS, LLM_MODEL = get_conf("AVAIL_LLM_MODELS", "LLM_MODEL")
+AVAIL_LLM_MODELS = AVAIL_LLM_MODELS + [LLM_MODEL]
+if "claude-1-100k" in AVAIL_LLM_MODELS or "claude-2" in AVAIL_LLM_MODELS:
+    from .bridge_claude import predict_no_ui_long_connection as claude_noui
+    from .bridge_claude import predict as claude_ui
+    model_info.update({
+        "claude-1-100k": {
+            "fn_with_ui": claude_ui,
+            "fn_without_ui": claude_noui,
+            "endpoint": None,
+            "max_token": 8196,
+            "tokenizer": tokenizer_gpt35,
+            "token_cnt": get_token_num_gpt35,
+        },
+    })
+    model_info.update({
+        "claude-2": {
+            "fn_with_ui": claude_ui,
+            "fn_without_ui": claude_noui,
+            "endpoint": None,
+            "max_token": 8196,
+            "tokenizer": tokenizer_gpt35,
+            "token_cnt": get_token_num_gpt35,
+        },
+    })
 if "jittorllms_rwkv" in AVAIL_LLM_MODELS:
     from .bridge_jittorllms_rwkv import predict_no_ui_long_connection as rwkv_noui
     from .bridge_jittorllms_rwkv import predict as rwkv_ui
@@ -239,7 +248,6 @@ if "moss" in AVAIL_LLM_MODELS:
 if "stack-claude" in AVAIL_LLM_MODELS:
     from .bridge_stackclaude import predict_no_ui_long_connection as claude_noui
     from .bridge_stackclaude import predict as claude_ui
-    # claude
     model_info.update({
         "stack-claude": {
             "fn_with_ui": claude_ui,
@@ -254,12 +262,59 @@ if "newbing-free" in AVAIL_LLM_MODELS:
     try:
         from .bridge_newbingfree import predict_no_ui_long_connection as newbingfree_noui
         from .bridge_newbingfree import predict as newbingfree_ui
-        # claude
         model_info.update({
             "newbing-free": {
                 "fn_with_ui": newbingfree_ui,
                 "fn_without_ui": newbingfree_noui,
                 "endpoint": newbing_endpoint,
+                "max_token": 4096,
+                "tokenizer": tokenizer_gpt35,
+                "token_cnt": get_token_num_gpt35,
+            }
+        })
+    except:
+        print(trimmed_format_exc())
+if "newbing" in AVAIL_LLM_MODELS:   # same with newbing-free
+    try:
+        from .bridge_newbingfree import predict_no_ui_long_connection as newbingfree_noui
+        from .bridge_newbingfree import predict as newbingfree_ui
+        model_info.update({
+            "newbing": {
+                "fn_with_ui": newbingfree_ui,
+                "fn_without_ui": newbingfree_noui,
+                "endpoint": newbing_endpoint,
+                "max_token": 4096,
+                "tokenizer": tokenizer_gpt35,
+                "token_cnt": get_token_num_gpt35,
+            }
+        })
+    except:
+        print(trimmed_format_exc())
+if "chatglmft" in AVAIL_LLM_MODELS:   # same with newbing-free
+    try:
+        from .bridge_chatglmft import predict_no_ui_long_connection as chatglmft_noui
+        from .bridge_chatglmft import predict as chatglmft_ui
+        model_info.update({
+            "chatglmft": {
+                "fn_with_ui": chatglmft_ui,
+                "fn_without_ui": chatglmft_noui,
+                "endpoint": None,
+                "max_token": 4096,
+                "tokenizer": tokenizer_gpt35,
+                "token_cnt": get_token_num_gpt35,
+            }
+        })
+    except:
+        print(trimmed_format_exc())
+if "internlm" in AVAIL_LLM_MODELS:
+    try:
+        from .bridge_internlm import predict_no_ui_long_connection as internlm_noui
+        from .bridge_internlm import predict as internlm_ui
+        model_info.update({
+            "internlm": {
+                "fn_with_ui": internlm_ui,
+                "fn_without_ui": internlm_noui,
+                "endpoint": None,
                 "max_token": 4096,
                 "tokenizer": tokenizer_gpt35,
                 "token_cnt": get_token_num_gpt35,
@@ -370,6 +425,6 @@ def predict(inputs, llm_kwargs, *args, **kwargs):
     additional_fn代表点击的哪个按钮，按钮见functional.py
     """
 
-    method = model_info[llm_kwargs['llm_model']]["fn_with_ui"]
+    method = model_info[llm_kwargs['llm_model']]["fn_with_ui"]  # 如果这里报错，检查config中的AVAIL_LLM_MODELS选项
     yield from method(inputs, llm_kwargs, *args, **kwargs)
 
