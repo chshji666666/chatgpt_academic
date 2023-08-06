@@ -187,6 +187,8 @@ def main():
         md_dropdown.select(on_md_dropdown_changed, [md_dropdown], [chatbot] )
         # 随变按钮的回调函数注册
         def route(request: gr.Request, k, *args, **kwargs):
+         #   if cookies.value['pck'] == "not":
+         #       statusads.value(r"xx")
             if k in [r"打开插件列表", r"请先从插件列表中选择"]: return
             yield from ArgsGeneralWrapper(crazy_fns[k]["Function"])(request, *args, **kwargs)
         click_handle = switchy_bt.click(route,[switchy_bt, *input_combo, gr.State(PORT)], output_combo)

@@ -161,6 +161,7 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
         return
     """
 
+    """
     if chatbot._cookies['pck'] == "not":
      if is_pck_key(inputs):
         chatbot._cookies['pck'] = "yes"
@@ -172,7 +173,7 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
         yield from update_ui(chatbot=chatbot, history=history,
                              msg="密钥错误或失效,进入网址查看使用帮助并获取密钥,http://www.promptcan.com/help/view15.html")  # 刷新界面
         return
-
+    """
 
     #if chatbot._cookies['pck'] == "not":
      #   chatbot.append(("密钥验证失败", "密钥错误或失效，请确认"))

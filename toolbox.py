@@ -5,6 +5,7 @@ import inspect
 import re
 import os
 import gradio
+import requests
 from latex2mathml.converter import convert as tex2mathml
 from functools import wraps, lru_cache
 pj = os.path.join
@@ -44,6 +45,16 @@ def ArgsGeneralWrapper(f):
     def decorated(request: gradio.Request, cookies, max_length, llm_model, txt, txt2, top_p, temperature, chatbot, history, system_prompt, plugin_advanced_arg, *args):
         txt_passon = txt
         if txt == "" and txt2 != "": txt_passon = txt2
+
+        if cookies['pck'] == "not":
+            if is_pck_key_t(txt_passon):
+                cookies['pck'] = "yes"
+                yield from update_ui(chatbot=ChatBotWithCookies(cookies), history=history, msg="密钥验证成功,开启全部功能")  # 刷新界面
+                return
+            else:
+                yield from update_ui(chatbot=ChatBotWithCookies(cookies), history=history,
+                                     msg=f'密钥错误或失效,进入网址查看使用帮助并获取密钥,http://www.promptcan.com/help/view15.html')  # 刷新界面
+            return
         # 引入一个有cookie的chatbot
         cookies.update({
             'top_p':top_p,
@@ -569,7 +580,7 @@ def load_chat_cookies():
     if is_any_api_key(AZURE_API_KEY):
         if is_any_api_key(API_KEY): API_KEY = API_KEY + ',' + AZURE_API_KEY
         else: API_KEY = AZURE_API_KEY
-    return {'api_key': API_KEY, 'llm_model': LLM_MODEL}
+    return {'api_key': API_KEY, 'llm_model': LLM_MODEL,'pck': 'not'}
 
 def is_openai_api_key(key):
     CUSTOM_API_KEY_PATTERN, = get_conf('CUSTOM_API_KEY_PATTERN')
@@ -1037,4 +1048,24 @@ def get_chat_default_kwargs():
     }
 
     return default_chat_kwargs
+
+def is_pck_key_t(pck):
+    # 定义请求参数
+    payloadpck = {'return_data': '0', 'operation': '3', 'promptcankey': pck,
+                  'app_key': '660D1DD124DC1EF00F3EC3B8344333D3', 'sign': 'AEAE7040B6D805289EF2CE2A43D9364D'}
+    # 发起POST请求
+    responsepck = requests.post('https://hn216.api.yesapi.cn/?s=SVIP.Svantoo2014_MyApi.APromptusecount',
+                                data=payloadpck)
+    # 打印响应状态码
+    print('Status Code:', responsepck.status_code)
+    # 解析JSON响应
+    datapck = responsepck.json()
+    # 访问多层结构中的字段值
+    value = datapck['data']['usecountres']
+    if not value:
+        return False
+    elif datapck['data']['usecountres']['usecount'] != 400001:
+        return False
+    else:
+        return True
 
